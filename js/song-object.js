@@ -24,6 +24,47 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
+
+	let passgain = new Tone.getContext().rawContext.createGain();
+	this.passgain = passgain;
+	let compressor = this.compressor;
+
+	let w = new WamInit();
+	let bridge = Tone.getContext().rawContext.createGain();
+	bridge.gain.value = 0;
+	let out = Tone.getContext().rawContext.createGain();
+
+	this.addModule = function (name) {
+		w.loadModule(name, document.querySelector("#mount"), insertNode);
+	}
+
+	const restoreSend = () => {
+		this.synths.forEach(e => {
+			if (e.sendEffect)
+				e.reconnect(passgain);
+		})
+	}
+
+	function insertNode(node) {
+		passgain.connect(bridge);
+		bridge.connect(out);
+		passgain._nativeAudioNode.connect(node);
+		node.connect(out._nativeAudioNode);
+		Tone.connect(out, compressor);
+		restoreSend();
+	}
+
+	this.removeModule = function () {
+		for (let e of this.synths)
+			e.reconnect(this.compressor);
+
+		passgain._nativeAudioNode.disconnect();
+		passgain.disconnect();
+		bridge.disconnect();
+		out.disconnect();
+		w.destroyModule();
+	}
+
 	this.setBpm = function (bpm) {
 		Tone.Transport.bpm.value = bpm;
 		this.bpm = bpm;

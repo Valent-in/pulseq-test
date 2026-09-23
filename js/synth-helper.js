@@ -228,6 +228,18 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		});
 	};
 
+	document.getElementById("chk-send-effect").onchange = (e) => {
+		let synth = songObj.synths[selectedSynthIndex];
+
+		if (e.target.checked) {
+			synth.reconnect(songObj.passgain);
+			synth.sendEffect = true;
+		} else {
+			synth.reconnect(songObj.compressor);
+			synth.sendEffect = false;
+		}
+	}
+
 	document.getElementById("button-copy-synth").onclick = () => {
 		let name = songObj.synthNames[selectedSynthIndex];
 		let defaultName = songObj.generateSynthName(name.split("-")[0] + "-", 2);
@@ -468,6 +480,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		showModal("synth-modal-menu");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
 		deleteSynthBtn.disabled = (songObj.synths.length == 1);
+		document.getElementById("chk-send-effect").checked = Boolean(songObj.synths[selectedSynthIndex].sendEffect);
 	}
 
 	document.getElementById("button-mixer-menu-open").onclick = showMixer;

@@ -68,6 +68,8 @@
 	<script defer src="js/scheduler.js"></script>
 	<script defer src="js/scheduler-ui.js"></script>
 
+	<script defer src="js/wam-init.js"></script>
+
 	<script defer src="js/song-object.js"></script>
 
 	<script defer src="js/reorder-menu.js"></script>
@@ -510,6 +512,7 @@
 				<div id="synth-list-footer" class="footer">
 					<button id="button-add-synth">+</button>
 					<button id="button-mixer-menu-open">Mix</button>
+					<button id="button-effect-menu-open">Effect</button>
 					<div id="synth-list-caption-area"></div>
 				</div>
 			</div>
@@ -716,6 +719,22 @@
 					<button id="button-export-menu-open">Export WAV</button>
 					<button id="button-midi-menu-open">MIDI</button>
 					<button id="button-arrange-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="effect-modal-menu" class="modal-container nodisplay">
+			<div class="modal-box">
+				<div class="modal-box-block">
+					<select id="select-effect-module">
+						<option value=""></option>
+					</select>
+				</div>
+				<div class="modal-box-block" style="padding: 38px 12px 12px 12px">
+					<div id="mount"></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-effect-menu-close" class="button-modal-bottom">Close</button>
 				</div>
 			</div>
 		</div>
@@ -1151,6 +1170,10 @@
 				<div id="synth-name-container" class="modal-box-block">
 					<span>Synth name</span>
 					<input type="text" id="input-synth-name">
+				</div>
+				<div class="modal-box-block">
+					<input type="checkbox" id="chk-send-effect">
+					<label for="chk-send-effect">Send effect</label>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-copy-synth">Copy Synth</button>

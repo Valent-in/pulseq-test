@@ -96,6 +96,13 @@ class Synth {
 		this.lastNote = "";
 	}
 
+	reconnect(newOutNode) {
+		let preOut = this.FX || this.ampout;
+		preOut.disconnect();
+		preOut.connect(newOutNode);
+		this.out.outputNode = newOutNode;
+	}
+
 	filterExp(x) {
 		let absX = Math.abs(x);
 		let mod = x > 0 ? 1 : -1;

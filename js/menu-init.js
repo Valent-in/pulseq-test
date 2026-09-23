@@ -260,6 +260,23 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		fillAdditionalValues();
 	};
 
+	document.getElementById("button-effect-menu-open").onclick = () => {
+		showModal("effect-modal-menu");
+	};
+
+	document.getElementById("button-effect-menu-close").onclick = () => {
+		hideModal("effect-modal-menu");
+	};
+
+	document.getElementById("select-effect-module").onchange = (e) => {
+		console.log(e.target.value);
+
+		songObj.removeModule();
+
+		if (e.target.value)
+			songObj.addModule(e.target.value);
+	};
+
 	document.getElementById("link-song-download").onclick = (event) => {
 		let lnk = event.target;
 

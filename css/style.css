@@ -779,6 +779,11 @@ input[type=range].range--volume {
 	float: left;
 }
 
+#button-effect-menu-open {
+	margin: 2px;
+	float: left;
+}
+
 #synth-list-caption-area {
 	float: right;
 	padding: 2px;

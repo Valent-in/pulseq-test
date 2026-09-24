@@ -726,12 +726,21 @@
 		<div id="effect-modal-menu" class="modal-container nodisplay">
 			<div class="modal-box">
 				<div class="modal-box-block">
-					<select id="select-effect-module">
+					<select id="select-effect-module-1">
 						<option value=""></option>
 					</select>
 				</div>
 				<div class="modal-box-block" style="padding: 38px 12px 12px 12px">
-					<div id="mount"></div>
+					<div id="mount1"></div>
+				</div>
+
+				<div class="modal-box-block">
+					<select id="select-effect-module-2">
+						<option value=""></option>
+					</select>
+				</div>
+				<div class="modal-box-block" style="padding: 38px 12px 12px 12px">
+					<div id="mount2"></div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-effect-menu-close" class="button-modal-bottom">Close</button>
@@ -1172,8 +1181,8 @@
 					<input type="text" id="input-synth-name">
 				</div>
 				<div class="modal-box-block">
-					<input type="checkbox" id="chk-send-effect">
-					<label for="chk-send-effect">Send effect</label>
+					<span>Send effect</span>
+					<select id="select-send-effect"></select>
 				</div>
 				<div class="modal-box-block">
 					<button id="button-copy-synth">Copy Synth</button>

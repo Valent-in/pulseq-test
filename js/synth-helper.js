@@ -228,16 +228,20 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		});
 	};
 
-	document.getElementById("chk-send-effect").onchange = (e) => {
+	document.getElementById("select-send-effect").onchange = (e) => {
 		let synth = songObj.synths[selectedSynthIndex];
+		let slot = e.target.value;
 
-		if (e.target.checked) {
-			synth.reconnect(songObj.passgain);
-			synth.sendEffect = true;
-		} else {
-			synth.reconnect(songObj.compressor);
+		if (slot == "[none]") {
 			synth.sendEffect = false;
+			synth.reconnect(songObj.compressor);
+			return;
 		}
+
+		let index = Number(slot);
+		synth.reconnect(songObj.pluginIns[index]);
+		synth.sendEffect = true;
+		synth.sendIndex = index;
 	}
 
 	document.getElementById("button-copy-synth").onclick = () => {
@@ -480,7 +484,28 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		showModal("synth-modal-menu");
 		document.getElementById("input-synth-name").value = songObj.synthNames[selectedSynthIndex];
 		deleteSynthBtn.disabled = (songObj.synths.length == 1);
-		document.getElementById("chk-send-effect").checked = Boolean(songObj.synths[selectedSynthIndex].sendEffect);
+
+		let select = document.getElementById("select-send-effect");
+		select.innerHTML = "";
+
+		let o = document.createElement("OPTION");
+		o.appendChild(document.createTextNode("[none]"));
+		o.value = "[none]";
+		select.appendChild(o);
+
+		for (let i = 0; i < songObj.moduleNames.length; i++) {
+			let o = document.createElement("OPTION");
+			let text = "slot " + i + " (" + (songObj.moduleNames[i] || "---") + ")";
+			if (!songObj.moduleNames[i])
+				o.disabled = true;
+			o.appendChild(document.createTextNode(text));
+			o.value = i;
+			select.appendChild(o);
+		}
+
+		let synth = songObj.synths[selectedSynthIndex];
+		if (synth.sendEffect)
+			select.value = synth.sendIndex;
 	}
 
 	document.getElementById("button-mixer-menu-open").onclick = showMixer;

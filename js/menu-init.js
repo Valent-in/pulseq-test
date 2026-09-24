@@ -260,23 +260,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		fillAdditionalValues();
 	};
 
-	document.getElementById("button-effect-menu-open").onclick = () => {
-		showModal("effect-modal-menu");
-	};
-
-	document.getElementById("button-effect-menu-close").onclick = () => {
-		hideModal("effect-modal-menu");
-	};
-
-	document.getElementById("select-effect-module").onchange = (e) => {
-		console.log(e.target.value);
-
-		songObj.removeModule();
-
-		if (e.target.value)
-			songObj.addModule(e.target.value);
-	};
-
 	document.getElementById("link-song-download").onclick = (event) => {
 		let lnk = event.target;
 
@@ -309,6 +292,37 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 
 	document.getElementById("button-arrange-menu-close").onclick = () => {
 		hideModal("arrange-modal-menu");
+	};
+
+	/*
+	 * Effect modal menu
+	 */
+	document.getElementById("button-effect-menu-open").onclick = () => {
+		showModal("effect-modal-menu");
+	};
+
+	document.getElementById("button-effect-menu-close").onclick = () => {
+		console.log("Storing plugin states...");
+		songObj.storePluginStates();
+		hideModal("effect-modal-menu");
+	};
+
+	document.getElementById("select-effect-module-1").onchange = (e) => {
+		console.log(e.target.value);
+
+		songObj.removeModule(0);
+
+		if (e.target.value)
+			songObj.addModule(e.target.value, 0);
+	};
+
+	document.getElementById("select-effect-module-2").onchange = (e) => {
+		console.log(e.target.value);
+
+		songObj.removeModule(1);
+
+		if (e.target.value)
+			songObj.addModule(e.target.value, 1);
 	};
 
 	/*
@@ -1172,6 +1186,10 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 			songObj.synthParams.push(newParams);
 		}
 
+		songObj.pluginStates = expObj.pluginStates || [];
+		songObj.pluginSends = expObj.pluginSends || [];
+		songObj.restorePluginStates();
+
 		songObj.patterns = [];
 		for (let i = 0; i < expObj.patterns.length; i++) {
 			let ptrn = new Pattern(expObj.patternNames[i]);
@@ -1267,6 +1285,10 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		expObj.barSteps = songObj.barSteps;
 		expObj.title = songObj.title;
 		expObj.swing = songObj.swing;
+
+		expObj.pluginStates = songObj.pluginStates;
+		songObj.storeSynthSends();
+		expObj.pluginSends = songObj.pluginSends;
 
 		for (let i = 0; i < songObj.patterns.length; i++) {
 			expObj.patterns.push(songObj.patterns[i].patternData);

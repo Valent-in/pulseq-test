@@ -24,45 +24,157 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
+	let pluginMounts = ["mount1", "mount2"];
+	let pluginNodes = [null, null];
+	let pluginIns = [null, null];
+	let wamInstances = [null, null];
+	let moduleNames = [null, null];
 
-	let passgain = new Tone.getContext().rawContext.createGain();
-	this.passgain = passgain;
-	let compressor = this.compressor;
+	this.moduleNames = moduleNames;
 
 	let w = new WamInit();
-	let bridge = Tone.getContext().rawContext.createGain();
-	bridge.gain.value = 0;
-	let out = Tone.getContext().rawContext.createGain();
 
-	this.addModule = function (name) {
-		w.loadModule(name, document.querySelector("#mount"), insertNode);
+	let compressor = this.compressor;
+	this.pluginIns = pluginIns;
+
+	// TODO: remove send data from Synth object
+	let states = []; //TEMPORAL
+	this.pluginSends = [];
+	this.pluginStates = [];
+
+	this.storePluginStates = async function () {
+		this.pluginStates = [];
+
+		for (let i = 0; i < wamInstances.length; i++) {
+			if (wamInstances[i]) {
+				let state = await wamInstances[i].audioNode.getState();
+				this.pluginStates.push({ name: moduleNames[i], state: state })
+			} else {
+				this.pluginStates.push(null);
+			}
+		}
+
+		this.storeSynthSends();
+		console.log("plugin states stored", this.pluginStates);
+	}
+
+	this.restorePluginStates = async function () {
+		for (let i = 0; i < this.pluginStates.length; i++) {
+			if (!this.pluginStates[i])
+				continue;
+
+			let name = this.pluginStates[i].name;
+			let state = this.pluginStates[i].state;
+
+			let id = pluginMounts[i];
+			await w.loadModule(name, document.getElementById(id), insertNode, i);
+
+			wamInstances[i].audioNode.setState(state);
+			moduleNames[i] = name;
+		}
+
+		this.restoreSynthSends();
+	}
+
+	this.storeSynthSends = function () {
+		this.pluginSends = [];
+		for (let i = 0; i < this.synths.length; i++) {
+			let synth = this.synths[i];
+
+			if (synth.sendEffect)
+				this.pluginSends.push(synth.sendIndex)
+			else
+				this.pluginSends.push(null);
+		}
+	}
+
+	this.restoreSynthSends = function () {
+		for (let i = 0; i < this.pluginSends.length; i++) {
+			if (this.pluginSends[i] === null)
+				continue;
+
+			this.synths[i].sendEffect = true;
+			this.synths[i].sendIndex = this.pluginSends[i];
+		}
+
+		restoreSend();
+	}
+
+	this.getPluginState = async function (index) {
+		let state = await wamInstances[index].audioNode.getState();
+		console.log(state);
+
+		states[index] = state;
+	}
+
+	this.setPluginState = async function (index, stateIndex) {
+		if (stateIndex === undefined)
+			stateIndex = index;
+
+		wamInstances[index].audioNode.setState(states[stateIndex]);
+	}
+
+	class BridgeNode {
+		constructor(nativeNode) {
+			this.inGain = new Tone.getContext().rawContext.createGain();
+			this.outGain = new Tone.getContext().rawContext.createGain();
+			this.bridgeGain = Tone.getContext().rawContext.createGain();
+			this.bridgeGain.gain.value = 0;
+			this.nativeNode = nativeNode;
+
+			this.inGain.connect(this.bridgeGain);
+			this.bridgeGain.connect(this.outGain);
+			this.inGain._nativeAudioNode.connect(nativeNode);
+			nativeNode.connect(this.outGain._nativeAudioNode);
+		}
+
+		destroy() {
+			this.inGain._nativeAudioNode.disconnect();
+			this.inGain.disconnect();
+			this.bridgeGain.disconnect();
+			this.outGain.disconnect();
+
+			this.inGain = null;
+			this.outGain = null;
+			this.bridgeGain = null;
+			this.nativeNode = null;
+		}
+	}
+
+	this.addModule = function (name, index) {
+		let id = pluginMounts[index];
+		w.loadModule(name, document.getElementById(id), insertNode, index);
+		moduleNames[index] = name;
 	}
 
 	const restoreSend = () => {
 		this.synths.forEach(e => {
 			if (e.sendEffect)
-				e.reconnect(passgain);
+				e.reconnect(pluginIns[e.sendIndex]);
 		})
 	}
 
-	function insertNode(node) {
-		passgain.connect(bridge);
-		bridge.connect(out);
-		passgain._nativeAudioNode.connect(node);
-		node.connect(out._nativeAudioNode);
-		Tone.connect(out, compressor);
+	function insertNode(wamInstance, index) {
+		console.log("insert", index);
+		pluginNodes[index] = new BridgeNode(wamInstance.audioNode);
+		pluginIns[index] = pluginNodes[index].inGain;
+		wamInstances[index] = wamInstance;
+
+		Tone.connect(pluginNodes[index].outGain, compressor);
 		restoreSend();
 	}
 
-	this.removeModule = function () {
+	this.removeModule = function (index) {
 		for (let e of this.synths)
 			e.reconnect(this.compressor);
 
-		passgain._nativeAudioNode.disconnect();
-		passgain.disconnect();
-		bridge.disconnect();
-		out.disconnect();
-		w.destroyModule();
+		if (pluginNodes[index]) {
+			pluginNodes[index].destroy();
+			pluginNodes[index] = null;
+		}
+		w.destroyModule(index);
+		wamInstances[index] = null;
+		moduleNames[index] = null;
 	}
 
 	this.setBpm = function (bpm) {

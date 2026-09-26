@@ -229,19 +229,15 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 	};
 
 	document.getElementById("select-send-effect").onchange = (e) => {
-		let synth = songObj.synths[selectedSynthIndex];
 		let slot = e.target.value;
 
 		if (slot == "[none]") {
-			synth.sendEffect = false;
-			synth.reconnect(songObj.compressor);
+			songObj.setSend(selectedSynthIndex, null)
 			return;
 		}
 
 		let index = Number(slot);
-		synth.reconnect(songObj.pluginIns[index]);
-		synth.sendEffect = true;
-		synth.sendIndex = index;
+		songObj.setSend(selectedSynthIndex, index);
 	}
 
 	document.getElementById("button-copy-synth").onclick = () => {
@@ -493,19 +489,19 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 		o.value = "[none]";
 		select.appendChild(o);
 
-		for (let i = 0; i < songObj.moduleNames.length; i++) {
+		for (let i = 0; i < songObj.pluginStates.length; i++) {
 			let o = document.createElement("OPTION");
-			let text = "slot " + i + " (" + (songObj.moduleNames[i] || "---") + ")";
-			if (!songObj.moduleNames[i])
+			let pluginName = songObj.pluginStates[i] && songObj.pluginStates[i].name;
+			let text = "slot " + i + " (" + (pluginName || "---") + ")";
+			if (!songObj.pluginStates[i])
 				o.disabled = true;
 			o.appendChild(document.createTextNode(text));
 			o.value = i;
 			select.appendChild(o);
 		}
 
-		let synth = songObj.synths[selectedSynthIndex];
-		if (synth.sendEffect)
-			select.value = synth.sendIndex;
+		if (songObj.sends[selectedSynthIndex] !== null)
+			select.value = songObj.sends[selectedSynthIndex];
 	}
 
 	document.getElementById("button-mixer-menu-open").onclick = showMixer;

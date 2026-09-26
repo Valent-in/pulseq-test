@@ -310,19 +310,23 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	document.getElementById("select-effect-module-1").onchange = (e) => {
 		console.log(e.target.value);
 
-		songObj.removeModule(0);
+		songObj.unloadModule(0);
 
 		if (e.target.value)
 			songObj.addModule(e.target.value, 0);
+		else
+			songObj.removeModule(0);
 	};
 
 	document.getElementById("select-effect-module-2").onchange = (e) => {
 		console.log(e.target.value);
 
-		songObj.removeModule(1);
+		songObj.unloadModule(1);
 
 		if (e.target.value)
 			songObj.addModule(e.target.value, 1);
+		else
+			songObj.removeModule(1);
 	};
 
 	/*
@@ -1187,8 +1191,8 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 
 		songObj.pluginStates = expObj.pluginStates || [];
-		songObj.pluginSends = expObj.pluginSends || [];
-		songObj.restorePluginStates();
+		songObj.sends = expObj.sends || [];
+		songObj.restorePlugins();
 
 		songObj.patterns = [];
 		for (let i = 0; i < expObj.patterns.length; i++) {
@@ -1287,8 +1291,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		expObj.swing = songObj.swing;
 
 		expObj.pluginStates = songObj.pluginStates;
-		songObj.storeSynthSends();
-		expObj.pluginSends = songObj.pluginSends;
+		expObj.sends = songObj.sends;
 
 		for (let i = 0; i < songObj.patterns.length; i++) {
 			expObj.patterns.push(songObj.patterns[i].patternData);

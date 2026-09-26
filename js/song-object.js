@@ -6,6 +6,7 @@ function SongObject() {
 	this.synthParams = [];
 	this.synths = [];
 	this.synthNames = [];
+	this.sends = [];
 
 	this.title = "";
 	this.bpm = 120;
@@ -24,41 +25,49 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
-	let pluginMounts = ["mount1", "mount2"];
-	let pluginNodes = [null, null];
-	let pluginIns = [null, null];
-	let wamInstances = [null, null];
-	let moduleNames = [null, null];
-
-	this.moduleNames = moduleNames;
-
 	let w = new WamInit();
+	this.pluginStates = []; // {name, state}
+	this.plugins = []; // {instance, node}
+	let pluginMounts = ["mount1", "mount2"];
 
-	let compressor = this.compressor;
-	this.pluginIns = pluginIns;
+	this.setSend = function (synthIndex, sendIndex) {
+		this.sends[synthIndex] = sendIndex;
+		this.applySend(synthIndex);
+	}
 
-	// TODO: remove send data from Synth object
-	let states = []; //TEMPORAL
-	this.pluginSends = [];
-	this.pluginStates = [];
+	this.applySend = function (synthIndex) {
+		let sendIndex = this.sends[synthIndex];
+		if (sendIndex === null) {
+			this.synths[synthIndex].reconnect(this.compressor);
+		} else {
+			if (this.plugins[sendIndex]) {
+				this.synths[synthIndex].reconnect(this.plugins[sendIndex].node.inGain)
+			} else {
+				this.sends[synthIndex] = null;
+				console.log("disconnected synth " + synthIndex + " from empty slot " + sendIndex);
+			}
+		}
+	}
+
+	this.restoreSends = function () {
+		for (let i = 0; i < this.synths.length; i++)
+			this.applySend(i);
+	}
 
 	this.storePluginStates = async function () {
-		this.pluginStates = [];
-
-		for (let i = 0; i < wamInstances.length; i++) {
-			if (wamInstances[i]) {
-				let state = await wamInstances[i].audioNode.getState();
-				this.pluginStates.push({ name: moduleNames[i], state: state })
+		for (let i = 0; i < this.plugins.length; i++) {
+			if (this.plugins[i]) {
+				let state = await this.plugins[i].instance.audioNode.getState();
+				this.pluginStates[i].state = state;
 			} else {
-				this.pluginStates.push(null);
+				this.pluginStates[i] = null;
 			}
 		}
 
-		this.storeSynthSends();
 		console.log("plugin states stored", this.pluginStates);
 	}
 
-	this.restorePluginStates = async function () {
+	this.restorePlugins = async function () {
 		for (let i = 0; i < this.pluginStates.length; i++) {
 			if (!this.pluginStates[i])
 				continue;
@@ -67,51 +76,12 @@ function SongObject() {
 			let state = this.pluginStates[i].state;
 
 			let id = pluginMounts[i];
-			await w.loadModule(name, document.getElementById(id), insertNode, i);
+			await w.loadModule(name, document.getElementById(id), wrapPluginNode, i);
 
-			wamInstances[i].audioNode.setState(state);
-			moduleNames[i] = name;
+			this.plugins[i].instance.audioNode.setState(state);
 		}
 
-		this.restoreSynthSends();
-	}
-
-	this.storeSynthSends = function () {
-		this.pluginSends = [];
-		for (let i = 0; i < this.synths.length; i++) {
-			let synth = this.synths[i];
-
-			if (synth.sendEffect)
-				this.pluginSends.push(synth.sendIndex)
-			else
-				this.pluginSends.push(null);
-		}
-	}
-
-	this.restoreSynthSends = function () {
-		for (let i = 0; i < this.pluginSends.length; i++) {
-			if (this.pluginSends[i] === null)
-				continue;
-
-			this.synths[i].sendEffect = true;
-			this.synths[i].sendIndex = this.pluginSends[i];
-		}
-
-		restoreSend();
-	}
-
-	this.getPluginState = async function (index) {
-		let state = await wamInstances[index].audioNode.getState();
-		console.log(state);
-
-		states[index] = state;
-	}
-
-	this.setPluginState = async function (index, stateIndex) {
-		if (stateIndex === undefined)
-			stateIndex = index;
-
-		wamInstances[index].audioNode.setState(states[stateIndex]);
+		this.restoreSends();
 	}
 
 	class BridgeNode {
@@ -143,38 +113,45 @@ function SongObject() {
 
 	this.addModule = function (name, index) {
 		let id = pluginMounts[index];
-		w.loadModule(name, document.getElementById(id), insertNode, index);
-		moduleNames[index] = name;
+		this.pluginStates[index] = { name: name, state: null };
+		w.loadModule(name, document.getElementById(id), wrapPluginNode, index);
 	}
 
-	const restoreSend = () => {
-		this.synths.forEach(e => {
-			if (e.sendEffect)
-				e.reconnect(pluginIns[e.sendIndex]);
-		})
+	const wrapPluginNode = (wamInstance, index) => {
+		console.log("inserting wam module", index);
+
+		let plugin = {};
+
+		plugin.instance = wamInstance;
+		plugin.node = new BridgeNode(wamInstance.audioNode);
+		this.plugins[index] = plugin;
+
+		Tone.connect(plugin.node.outGain, this.compressor);
+		this.restoreSends();
 	}
 
-	function insertNode(wamInstance, index) {
-		console.log("insert", index);
-		pluginNodes[index] = new BridgeNode(wamInstance.audioNode);
-		pluginIns[index] = pluginNodes[index].inGain;
-		wamInstances[index] = wamInstance;
+	this.forceBypass = function () {
+		for (let i = 0; i < this.synths.length; i++)
+			this.synths[i].reconnect(this.compressor);
+	}
 
-		Tone.connect(pluginNodes[index].outGain, compressor);
-		restoreSend();
+	this.unloadModule = function (index) {
+		if (!this.plugins[index])
+			return;
+
+		this.forceBypass();
+
+		if (this.plugins[index].node) {
+			this.plugins[index].node.destroy();
+		}
+		w.destroyModule(index);
+		this.plugins[index] = null;
 	}
 
 	this.removeModule = function (index) {
-		for (let e of this.synths)
-			e.reconnect(this.compressor);
-
-		if (pluginNodes[index]) {
-			pluginNodes[index].destroy();
-			pluginNodes[index] = null;
-		}
-		w.destroyModule(index);
-		wamInstances[index] = null;
-		moduleNames[index] = null;
+		this.unloadModule(index);
+		this.pluginStates[index] = null;
+		this.restoreSends();
 	}
 
 	this.setBpm = function (bpm) {
@@ -240,6 +217,7 @@ function SongObject() {
 		this.synthParams.push(newSynthParamObj);
 		this.synths.push(newSynth);
 		this.synthNames.push(name || "");
+		this.sends.push(null);
 	}
 
 	this.deleteSynth = function (index) {
@@ -248,6 +226,7 @@ function SongObject() {
 		this.synths.splice(index, 1);
 		this.synthNames.splice(index, 1);
 		this.synthParams.splice(index, 1);
+		this.sends.splice(index, 1);
 
 		for (let i = 0; i < this.patterns.length; i++) {
 			this.patterns[i].spliceSynth(index);

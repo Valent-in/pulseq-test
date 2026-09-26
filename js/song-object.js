@@ -75,19 +75,18 @@ function SongObject() {
 			let state = this.pluginStates[i].state;
 
 			let id = pluginMounts[i];
-			await wam.loadModule(name, document.getElementById(id), connectPluginNode, i);
-
+			await wam.loadModule(name, document.getElementById(id), i);
 			wam.plugins[i].wamInstance.audioNode.setState(state);
+			Tone.connect(wam.plugins[i].node.outGain, this.compressor);
 		}
+
+		this.restoreSends();
 	}
 
-	this.addModule = function (name, index) {
+	this.addPlugin = async function (name, index) {
 		let id = pluginMounts[index];
 		this.pluginStates[index] = { name: name, state: null };
-		wam.loadModule(name, document.getElementById(id), connectPluginNode, index);
-	}
-
-	const connectPluginNode = (index) => {
+		await wam.loadModule(name, document.getElementById(id), index);
 		Tone.connect(wam.plugins[index].node.outGain, this.compressor);
 		this.restoreSends();
 	}
@@ -97,13 +96,13 @@ function SongObject() {
 			this.synths[i].reconnect(this.compressor);
 	}
 
-	this.unloadModule = function (index) {
+	this.unloadPlugin = function (index) {
 		this.forceBypass();
 		wam.destroyModule(index);
 	}
 
-	this.removeModule = function (index) {
-		this.unloadModule(index);
+	this.removePlugin = function (index) {
+		this.unloadPlugin(index);
 		this.pluginStates[index] = null;
 		this.restoreSends();
 	}

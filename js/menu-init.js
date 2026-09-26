@@ -310,23 +310,23 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 	document.getElementById("select-effect-module-1").onchange = (e) => {
 		console.log(e.target.value);
 
-		songObj.unloadModule(0);
+		songObj.unloadPlugin(0);
 
 		if (e.target.value)
-			songObj.addModule(e.target.value, 0);
+			songObj.addPlugin(e.target.value, 0);
 		else
-			songObj.removeModule(0);
+			songObj.removePlugin(0);
 	};
 
 	document.getElementById("select-effect-module-2").onchange = (e) => {
 		console.log(e.target.value);
 
-		songObj.unloadModule(1);
+		songObj.unloadPlugin(1);
 
 		if (e.target.value)
-			songObj.addModule(e.target.value, 1);
+			songObj.addPlugin(e.target.value, 1);
 		else
-			songObj.removeModule(1);
+			songObj.removePlugin(1);
 	};
 
 	/*

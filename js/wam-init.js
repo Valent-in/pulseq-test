@@ -52,7 +52,7 @@ function WamInit() {
         console.log(" ! Can not fetch plugin list ! ");
     });
 
-    this.loadModule = async function (name, mount, callback, index = 0) {
+    this.loadModule = async function (name, mount, index = 0) {
         let wamInstance;
         let wamGui;
 
@@ -78,7 +78,6 @@ function WamInit() {
         instances[index].node = new BridgeNode(wamInstance.audioNode);
 
         console.log("WAM INIT COMPLETED", pathToWam);
-        callback(index);
     }
 
     this.destroyModule = function (index = 0) {

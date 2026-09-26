@@ -25,10 +25,9 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
-	let w = new WamInit();
-	this.pluginStates = []; // {name, state}
-	this.plugins = []; // {instance, node}
+	let wam = new WamInit();
 	let pluginMounts = ["mount1", "mount2"];
+	this.pluginStates = []; // {name, state}
 
 	this.setSend = function (synthIndex, sendIndex) {
 		this.sends[synthIndex] = sendIndex;
@@ -40,8 +39,8 @@ function SongObject() {
 		if (sendIndex === null) {
 			this.synths[synthIndex].reconnect(this.compressor);
 		} else {
-			if (this.plugins[sendIndex]) {
-				this.synths[synthIndex].reconnect(this.plugins[sendIndex].node.inGain)
+			if (wam.plugins[sendIndex]) {
+				this.synths[synthIndex].reconnect(wam.plugins[sendIndex].node.inGain)
 			} else {
 				this.sends[synthIndex] = null;
 				console.log("disconnected synth " + synthIndex + " from empty slot " + sendIndex);
@@ -55,9 +54,9 @@ function SongObject() {
 	}
 
 	this.storePluginStates = async function () {
-		for (let i = 0; i < this.plugins.length; i++) {
-			if (this.plugins[i]) {
-				let state = await this.plugins[i].instance.audioNode.getState();
+		for (let i = 0; i < wam.plugins.length; i++) {
+			if (wam.plugins[i]) {
+				let state = await wam.plugins[i].wamInstance.audioNode.getState();
 				this.pluginStates[i].state = state;
 			} else {
 				this.pluginStates[i] = null;
@@ -76,57 +75,20 @@ function SongObject() {
 			let state = this.pluginStates[i].state;
 
 			let id = pluginMounts[i];
-			await w.loadModule(name, document.getElementById(id), wrapPluginNode, i);
+			await wam.loadModule(name, document.getElementById(id), connectPluginNode, i);
 
-			this.plugins[i].instance.audioNode.setState(state);
-		}
-
-		this.restoreSends();
-	}
-
-	class BridgeNode {
-		constructor(nativeNode) {
-			this.inGain = new Tone.getContext().rawContext.createGain();
-			this.outGain = new Tone.getContext().rawContext.createGain();
-			this.bridgeGain = Tone.getContext().rawContext.createGain();
-			this.bridgeGain.gain.value = 0;
-			this.nativeNode = nativeNode;
-
-			this.inGain.connect(this.bridgeGain);
-			this.bridgeGain.connect(this.outGain);
-			this.inGain._nativeAudioNode.connect(nativeNode);
-			nativeNode.connect(this.outGain._nativeAudioNode);
-		}
-
-		destroy() {
-			this.inGain._nativeAudioNode.disconnect();
-			this.inGain.disconnect();
-			this.bridgeGain.disconnect();
-			this.outGain.disconnect();
-
-			this.inGain = null;
-			this.outGain = null;
-			this.bridgeGain = null;
-			this.nativeNode = null;
+			wam.plugins[i].wamInstance.audioNode.setState(state);
 		}
 	}
 
 	this.addModule = function (name, index) {
 		let id = pluginMounts[index];
 		this.pluginStates[index] = { name: name, state: null };
-		w.loadModule(name, document.getElementById(id), wrapPluginNode, index);
+		wam.loadModule(name, document.getElementById(id), connectPluginNode, index);
 	}
 
-	const wrapPluginNode = (wamInstance, index) => {
-		console.log("inserting wam module", index);
-
-		let plugin = {};
-
-		plugin.instance = wamInstance;
-		plugin.node = new BridgeNode(wamInstance.audioNode);
-		this.plugins[index] = plugin;
-
-		Tone.connect(plugin.node.outGain, this.compressor);
+	const connectPluginNode = (index) => {
+		Tone.connect(wam.plugins[index].node.outGain, this.compressor);
 		this.restoreSends();
 	}
 
@@ -136,16 +98,8 @@ function SongObject() {
 	}
 
 	this.unloadModule = function (index) {
-		if (!this.plugins[index])
-			return;
-
 		this.forceBypass();
-
-		if (this.plugins[index].node) {
-			this.plugins[index].node.destroy();
-		}
-		w.destroyModule(index);
-		this.plugins[index] = null;
+		wam.destroyModule(index);
 	}
 
 	this.removeModule = function (index) {

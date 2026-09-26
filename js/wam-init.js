@@ -2,6 +2,34 @@ function WamInit() {
     let initializeWamHost;
     let hostGroupId;
     let instances = [];
+    this.plugins = instances;
+
+    class BridgeNode {
+        constructor(nativeNode) {
+            this.inGain = new Tone.getContext().rawContext.createGain();
+            this.outGain = new Tone.getContext().rawContext.createGain();
+            this.bridgeGain = Tone.getContext().rawContext.createGain();
+            this.bridgeGain.gain.value = 0;
+            this.nativeNode = nativeNode;
+
+            this.inGain.connect(this.bridgeGain);
+            this.bridgeGain.connect(this.outGain);
+            this.inGain._nativeAudioNode.connect(nativeNode);
+            nativeNode.connect(this.outGain._nativeAudioNode);
+        }
+
+        destroy() {
+            this.inGain._nativeAudioNode.disconnect();
+            this.inGain.disconnect();
+            this.bridgeGain.disconnect();
+            this.outGain.disconnect();
+
+            this.inGain = null;
+            this.outGain = null;
+            this.bridgeGain = null;
+            this.nativeNode = null;
+        }
+    }
 
     fetch("wam-plugins/plugins.json").then(response => response.json()).then(data => {
         let select1 = document.getElementById("select-effect-module-1");
@@ -46,21 +74,26 @@ function WamInit() {
         mount.appendChild(wamGui);
 
         instances[index] = { wamInstance: wamInstance, wamGui: wamGui };
+
+        instances[index].node = new BridgeNode(wamInstance.audioNode);
+
         console.log("WAM INIT COMPLETED", pathToWam);
-        callback(wamInstance, index);
+        callback(index);
     }
 
     this.destroyModule = function (index = 0) {
         if (!instances[index]) {
-            console.log("module index do not exist");
+            console.log("module index does not exist");
             return;
+        }
+
+        if (instances[index].node) {
+            instances[index].node.destroy();
         }
 
         if (instances[index].wamGui) {
             instances[index].wamGui.remove();
-
             instances[index].wamInstance.destroyGui(instances[index].wamGui);
-
         }
 
         if (instances[index].wamInstance) {

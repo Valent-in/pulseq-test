@@ -76,8 +76,11 @@ function SongObject() {
 
 			let id = pluginMounts[i];
 			await wam.loadModule(name, document.getElementById(id), i);
-			wam.plugins[i].wamInstance.audioNode.setState(state);
-			Tone.connect(wam.plugins[i].node.outGain, this.compressor);
+
+			if (wam.plugins[i]) {
+				wam.plugins[i].wamInstance.audioNode.setState(state);
+				Tone.connect(wam.plugins[i].node.outGain, this.compressor);
+			}
 		}
 
 		this.restoreSends();
@@ -87,17 +90,20 @@ function SongObject() {
 		let id = pluginMounts[index];
 		this.pluginStates[index] = { name: name, state: null };
 		await wam.loadModule(name, document.getElementById(id), index);
-		Tone.connect(wam.plugins[index].node.outGain, this.compressor);
-		this.restoreSends();
+		if (wam.plugins[index])
+			Tone.connect(wam.plugins[index].node.outGain, this.compressor);
+
+		this.restoreSends(); // reconnect to same slot on plugin switch
 	}
 
-	this.forceBypass = function () {
-		for (let i = 0; i < this.synths.length; i++)
-			this.synths[i].reconnect(this.compressor);
+	this.pluginBypass = function (pluginIndex) {
+		for (let i = 0; i < this.sends.length; i++)
+			if (this.sends[i] == pluginIndex)
+				this.synths[i].reconnect(this.compressor);
 	}
 
 	this.unloadPlugin = function (index) {
-		this.forceBypass();
+		this.pluginBypass(index);
 		wam.destroyModule(index);
 	}
 

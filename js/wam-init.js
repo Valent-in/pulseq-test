@@ -60,13 +60,23 @@ function WamInit() {
         const audioContext = Tone.getContext().rawContext._nativeAudioContext;
 
         if (!initializeWamHost) {
-            initializeWamHost = await import("../wam-plugins/utils/sdk/src/initializeWamHost.js");
-            [hostGroupId] = await initializeWamHost.default(audioContext);
+            try {
+                initializeWamHost = await import("../wam-plugins/utils/sdk/src/initializeWamHost.js");
+                [hostGroupId] = await initializeWamHost.default(audioContext);
+            } catch (error) {
+                showAlert("Can not load plugins - WAM host initialization error\n" + error.message);
+                throw error;
+            }
         }
 
-        const { default: WAM } = await import(pathToWam);
-
-        wamInstance = await WAM.createInstance(hostGroupId, audioContext);
+        try {
+            const { default: WAM } = await import(pathToWam);
+            wamInstance = await WAM.createInstance(hostGroupId, audioContext);
+        } catch (error) {
+            showAlert("Can not load plugin " + name + "\n" + error.message);
+            console.error(error.message);
+            return;
+        }
 
         wamGui = await wamInstance.createGui();
 

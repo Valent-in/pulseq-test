@@ -97,10 +97,13 @@ class Synth {
 	}
 
 	reconnect(newOutNode) {
+		this.out.outputNode = newOutNode;
+		if (this.isMuted)
+			return;
+
 		let preOut = this.FX || this.ampout;
 		preOut.disconnect();
 		preOut.connect(newOutNode);
-		this.out.outputNode = newOutNode;
 	}
 
 	filterExp(x) {

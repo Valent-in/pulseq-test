@@ -25,8 +25,7 @@ function SongObject() {
 	this.compressor = new Tone.Compressor(this.compressorThreshold, this.compressorRatio);
 	this.compressor.toDestination();
 
-	let wam = new WamInit();
-	let pluginMounts = ["mount1", "mount2"];
+	let wam = new WamInit(this);
 	this.pluginStates = []; // {name, state}
 
 	this.setSend = function (synthIndex, sendIndex) {
@@ -74,8 +73,7 @@ function SongObject() {
 			let name = this.pluginStates[i].name;
 			let state = this.pluginStates[i].state;
 
-			let id = pluginMounts[i];
-			await wam.loadModule(name, document.getElementById(id), i);
+			await wam.loadModule(name, i);
 
 			if (wam.plugins[i]) {
 				wam.plugins[i].wamInstance.audioNode.setState(state);
@@ -87,9 +85,8 @@ function SongObject() {
 	}
 
 	this.addPlugin = async function (name, index) {
-		let id = pluginMounts[index];
 		this.pluginStates[index] = { name: name, state: null };
-		await wam.loadModule(name, document.getElementById(id), index);
+		await wam.loadModule(name, index);
 		if (wam.plugins[index])
 			Tone.connect(wam.plugins[index].node.outGain, this.compressor);
 

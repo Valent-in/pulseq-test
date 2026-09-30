@@ -307,28 +307,6 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		hideModal("effect-modal-menu");
 	};
 
-	document.getElementById("select-effect-module-1").onchange = (e) => {
-		console.log(e.target.value);
-
-		songObj.unloadPlugin(0);
-
-		if (e.target.value)
-			songObj.addPlugin(e.target.value, 0);
-		else
-			songObj.removePlugin(0);
-	};
-
-	document.getElementById("select-effect-module-2").onchange = (e) => {
-		console.log(e.target.value);
-
-		songObj.unloadPlugin(1);
-
-		if (e.target.value)
-			songObj.addPlugin(e.target.value, 1);
-		else
-			songObj.removePlugin(1);
-	};
-
 	/*
 	 * Export modal menu
 	 */

@@ -723,27 +723,46 @@
 			</div>
 		</div>
 
-		<div id="effect-modal-menu" class="modal-container nodisplay">
-			<div class="modal-box">
+		<div id="effect-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box scrollable-modal">
 				<div class="modal-box-block">
-					<select id="select-effect-module-1">
-						<option value=""></option>
-					</select>
-				</div>
-				<div class="modal-box-block" style="padding: 38px 12px 12px 12px">
-					<div id="mount1"></div>
-				</div>
+					<div class="scrollable-modal-header">Effect plugins</div>
+					<div style="display:flex; flex-wrap: wrap;">
+						<div class="effect-outer-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
 
-				<div class="modal-box-block">
-					<select id="select-effect-module-2">
-						<option value=""></option>
-					</select>
-				</div>
-				<div class="modal-box-block" style="padding: 38px 12px 12px 12px">
-					<div id="mount2"></div>
+						<div class="effect-outer-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+
+						<div class="effect-outer-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+
+						<div class="effect-outer-container">
+							<button class="js-button-effect-select">+</button>
+							<div class="js-plugin-mount"></div>
+						</div>
+					</div>
 				</div>
 				<div class="modal-box-block modal-box-footer">
 					<button id="button-effect-menu-close" class="button-modal-bottom">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="plugin-select-modal-menu" class="modal-container force-centered nodisplay">
+			<div class="modal-box scrollable-modal narrow-modal">
+				<div class="modal-box-block">
+					<div class="scrollable-modal-header">Select Plugin</div>
+					<div id="menu-plugin-list-container" class="notranslate" translate="no"></div>
+				</div>
+				<div class="modal-box-block modal-box-footer">
+					<button id="button-plugin-select-close" class="button-modal-bottom">Cancel</button>
 				</div>
 			</div>
 		</div>

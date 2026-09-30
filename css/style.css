@@ -1438,6 +1438,15 @@ button.button--arrow-up {
 	pointer-events: none;
 }
 
+.effect-outer-container {
+	padding: 6px 10px 10px 10px;
+}
+
+button.js-button-effect-select {
+	min-width: 1rem;
+	margin-bottom: 6px
+}
+
 #toast-box {
 	border: 1px solid #777;
 	border-radius: 3px;

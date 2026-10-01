@@ -991,11 +991,6 @@ input[type=range].range--volume {
 	min-width: 80%;
 	max-width: 45vw;
 	box-sizing: border-box;
-	padding-right: 1.1rem;
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,10 60,60 110,10' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
-	background-position: center right 0.5em;
-	background-repeat: no-repeat;
-	background-size: auto 25%;
 	overflow-x: hidden;
 	text-overflow: ellipsis;
 	text-align: left;
@@ -1428,6 +1423,23 @@ button.button--arrow-up {
 	touch-action: none;
 }
 
+.effect-outer-container {
+	padding: 6px 10px 10px 10px;
+}
+
+button.js-button-effect-select {
+	min-width: 1rem;
+	margin-bottom: 6px
+}
+
+button.button-select {
+	padding-right: 1.2rem;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' height='70' width='120'><path d='M 10,10 60,60 110,10' style='fill:none;stroke:rgb(150,150,150);stroke-width:20;stroke-linecap:round; stroke-linejoin:round'/></svg>");
+	background-position: center right 0.5em;
+	background-repeat: no-repeat;
+	background-size: auto 25%;
+}
+
 .toast-container {
 	position: fixed;
 	bottom: 80px;
@@ -1436,15 +1448,6 @@ button.button--arrow-up {
 	justify-content: center;
 	z-index: 12;
 	pointer-events: none;
-}
-
-.effect-outer-container {
-	padding: 6px 10px 10px 10px;
-}
-
-button.js-button-effect-select {
-	min-width: 1rem;
-	margin-bottom: 6px
 }
 
 #toast-box {

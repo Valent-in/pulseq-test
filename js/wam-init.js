@@ -43,6 +43,8 @@ function WamInit(songObj) {
 
 		songObj.unloadPlugin(selectedSlot);
 		pluginSelectors[selectedSlot].innerText = "+";
+		pluginSelectors[selectedSlot].classList.remove("button-select");
+		
 
 		if (event.target.dataset.name)
 			songObj.addPlugin(event.target.dataset.name, selectedSlot);
@@ -106,6 +108,7 @@ function WamInit(songObj) {
 		instances[index].node = new BridgeNode(wamInstance.audioNode);
 
 		pluginSelectors[index].innerText = name;
+		pluginSelectors[index].classList.add("button-select");
 		console.log("WAM INIT COMPLETED", pathToWam);
 	}
 

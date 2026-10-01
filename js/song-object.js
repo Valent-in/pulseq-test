@@ -81,7 +81,8 @@ function SongObject() {
 			}
 		}
 
-		this.restoreSends();
+		if (this.pluginStates.length)
+			this.restoreSends();
 	}
 
 	this.addPlugin = async function (name, index) {

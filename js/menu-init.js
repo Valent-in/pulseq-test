@@ -1169,7 +1169,7 @@ function menuInit(songObj, onSongChangeCallback, loadSynthCallback, renderCallba
 		}
 
 		songObj.pluginStates = expObj.pluginStates || [];
-		songObj.sends = expObj.sends || [];
+		songObj.sends = expObj.sends || new Array(songObj.synths.length).fill(null);
 		songObj.restorePlugins();
 
 		songObj.patterns = [];

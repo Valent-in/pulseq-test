@@ -426,7 +426,7 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 			if (isMuted)
 				entry.classList.add("muted-mark");
 
-			entry.classList.add("synth-list-entry");
+			entry.classList.add("select-list-entry");
 			return entry;
 		}
 	}

@@ -1018,7 +1018,7 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 	};
 
 	document.getElementById("menu-synth-list-container").onclick = (event) => {
-		if (!event.target.classList.contains("js-synth-list-entry"))
+		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
 		hideModal("synth-select-modal-menu");
@@ -1071,12 +1071,12 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 		listContainer.innerHTML = "";
 
 		let noneEntry = document.createElement("DIV");
-		noneEntry.classList.add("js-synth-list-entry");
-		noneEntry.classList.add("synth-list-entry");
-		noneEntry.id = "synth-list-entry-none";
+		noneEntry.classList.add("js-select-list-entry");
+		noneEntry.classList.add("select-list-entry");
+		noneEntry.classList.add("select-list-entry--none");
 
 		if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === null)
-			noneEntry.classList.add("synth-list-entry--current");
+			noneEntry.classList.add("select-list-entry--current");
 
 		noneEntry.dataset.index = -1;
 		noneEntry.appendChild(document.createTextNode("[none]"));
@@ -1084,17 +1084,17 @@ function PatternUi(songObj, assignSynthCallback, onSongChangeCallback) {
 
 		for (let i = 0; i < songObj.synthNames.length; i++) {
 			let entry = document.createElement("DIV");
-			entry.classList.add("js-synth-list-entry");
-			entry.classList.add("synth-list-entry");
+			entry.classList.add("js-select-list-entry");
+			entry.classList.add("select-list-entry");
 
 			if (!isCreateNewLayer && songObj.getCurrentLayerSynthIndex() === i)
-				entry.classList.add("synth-list-entry--current");
+				entry.classList.add("select-list-entry--current");
 
 			if (!songObj.testSynthOnPattern(i))
-				entry.classList.add("synth-list-entry--disabled");
+				entry.classList.add("select-list-entry--disabled");
 
 			if (isCreateNewLayer && songObj.isSynthInCurrentPattern(i))
-				entry.classList.add("synth-list-entry--disabled");
+				entry.classList.add("select-list-entry--disabled");
 
 			if (songObj.synths[i].isMuted)
 				entry.classList.add("muted-mark");

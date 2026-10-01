@@ -702,7 +702,7 @@ input[type=range].range--volume {
 	border-color: #d44;
 }
 
-.synth-list-entry {
+.select-list-entry {
 	border: 1px solid #444;
 	background-color: #222;
 	border-radius: 3px;
@@ -720,23 +720,23 @@ input[type=range].range--volume {
 	font-size: 1rem;
 }
 
-.synth-list-entry--current {
+.select-list-entry--current {
 	border-left: 9px solid #444;
 }
 
-.synth-list-entry:hover {
+.select-list-entry:hover {
 	border: 1px solid #606060;
 }
 
-.synth-list-entry--current:hover:before {
+.select-list-entry--current:hover:before {
 	border-left: 6px solid #606060;
 }
 
-.synth-list-entry:active {
+.select-list-entry:active {
 	background-color: #191919;
 }
 
-.synth-list-entry--disabled {
+.select-list-entry--disabled {
 	opacity: 0.4;
 }
 
@@ -1075,11 +1075,11 @@ button.button--highlight-yellow {
 	min-width: 4rem;
 }
 
-#menu-synth-list-container .synth-list-entry {
+#menu-synth-list-container .select-list-entry {
 	padding: 8px;
 }
 
-#synth-list-entry-none {
+.select-list-entry--none {
 	color: #e88;
 }
 

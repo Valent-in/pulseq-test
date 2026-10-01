@@ -85,11 +85,13 @@ function SongObject() {
 	}
 
 	this.addPlugin = async function (name, index) {
-		this.pluginStates[index] = { name: name, state: null };
 		await wam.loadModule(name, index);
-		if (wam.plugins[index])
+		if (wam.plugins[index]) {
 			Tone.connect(wam.plugins[index].node.outGain, this.compressor);
-
+			this.pluginStates[index] = { name: name, state: null };
+		} else {
+			this.pluginStates[index] = null;
+		}
 		this.restoreSends(); // reconnect to same slot on plugin switch
 	}
 

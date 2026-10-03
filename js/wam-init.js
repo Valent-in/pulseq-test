@@ -155,8 +155,6 @@ function WamInit(songObj) {
 	}
 
 	function buildPluginList(list) {
-		//showModal("plugin-select-modal-menu");
-
 		let listContainer = document.getElementById("menu-plugin-list-container");
 		listContainer.innerHTML = "";
 
@@ -165,10 +163,6 @@ function WamInit(songObj) {
 		noneEntry.classList.add("select-list-entry");
 		noneEntry.classList.add("select-list-entry--none");
 
-		//if (selected_plugin)
-		//	noneEntry.classList.add("select-list-entry--current");
-
-		//noneEntry.dataset.index = -1;
 		noneEntry.appendChild(document.createTextNode("[none]"));
 		listContainer.appendChild(noneEntry);
 
@@ -176,9 +170,6 @@ function WamInit(songObj) {
 			let entry = document.createElement("DIV");
 			entry.classList.add("js-select-list-entry");
 			entry.classList.add("select-list-entry");
-
-			//if (selected_plugin)
-			//	entry.classList.add("select-list-entry--current");
 
 			entry.dataset.name = list[i].name;
 			entry.appendChild(document.createTextNode(list[i].name));

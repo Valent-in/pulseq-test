@@ -24,13 +24,13 @@ console.log("%c\u25A0 %c\u25B6 %c\u25A0 %c PulseQuaver v" + DEFAULT_PARAMS.progr
 	}
 
 	window.g_markCurrentSynth = function () {
-		let previous = document.querySelectorAll("#synth-list-main > .synth-list-entry--current");
+		let previous = document.querySelectorAll("#synth-list-main > .select-list-entry--current");
 		if (previous.length > 0)
-			previous[0].classList.remove("synth-list-entry--current");
+			previous[0].classList.remove("select-list-entry--current");
 
 		let element = document.getElementById("synth-list-entry_" + songObject.currentSynthIndex);
 		if (element)
-			element.classList.add("synth-list-entry--current");
+			element.classList.add("select-list-entry--current");
 	}
 
 	window.g_markCurrentPattern = function () {

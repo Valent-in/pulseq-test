@@ -28,6 +28,10 @@ function SongObject() {
 	let wam = new WamInit(this);
 	this.pluginStates = []; // {name, state}
 
+	this.isPluginLoaded = function (pluginIndex) {
+		return !!(wam.plugins[pluginIndex]);
+	}
+
 	this.setSend = function (synthIndex, sendIndex) {
 		this.sends[synthIndex] = sendIndex;
 		this.applySend(synthIndex);
@@ -41,8 +45,7 @@ function SongObject() {
 			if (wam.plugins[sendIndex]) {
 				this.synths[synthIndex].reconnect(wam.plugins[sendIndex].node.inGain)
 			} else {
-				this.sends[synthIndex] = null;
-				console.log("disconnected synth " + synthIndex + " from empty slot " + sendIndex);
+				console.log("synth " + synthIndex + " disconnected from empty slot " + sendIndex);
 			}
 		}
 	}
@@ -73,7 +76,7 @@ function SongObject() {
 			let name = this.pluginStates[i].name;
 			let state = this.pluginStates[i].state;
 
-			await wam.loadModule(name, i);
+			await wam.loadModule(name, i, true);
 
 			if (wam.plugins[i]) {
 				wam.plugins[i].wamInstance.audioNode.setState(state);
@@ -85,32 +88,31 @@ function SongObject() {
 			this.restoreSends();
 	}
 
-	this.addPlugin = async function (name, index) {
-		await wam.loadModule(name, index);
-		if (wam.plugins[index]) {
-			Tone.connect(wam.plugins[index].node.outGain, this.compressor);
-			this.pluginStates[index] = { name: name, state: null };
+	this.addPlugin = async function (name, pluginIndex) {
+		await wam.loadModule(name, pluginIndex);
+		if (wam.plugins[pluginIndex]) {
+			Tone.connect(wam.plugins[pluginIndex].node.outGain, this.compressor);
+			this.pluginStates[pluginIndex] = { name: name, state: null };
 		} else {
-			this.pluginStates[index] = null;
+			this.pluginStates[pluginIndex] = null;
 		}
 		this.restoreSends(); // reconnect to same slot on plugin switch
 	}
 
-	this.pluginBypass = function (pluginIndex) {
+	this.unloadPlugin = function (pluginIndex) {
 		for (let i = 0; i < this.sends.length; i++)
 			if (this.sends[i] == pluginIndex)
 				this.synths[i].reconnect(this.compressor);
+
+		wam.destroyModule(pluginIndex);
 	}
 
-	this.unloadPlugin = function (index) {
-		this.pluginBypass(index);
-		wam.destroyModule(index);
-	}
+	this.removePluginState = function (pluginIndex) {
+		this.pluginStates[pluginIndex] = null;
 
-	this.removePlugin = function (index) {
-		this.unloadPlugin(index);
-		this.pluginStates[index] = null;
-		this.restoreSends();
+		for (let i = 0; i < this.sends.length; i++)
+			if (this.sends[i] == pluginIndex)
+				this.sends[i] = null
 	}
 
 	this.setBpm = function (bpm) {

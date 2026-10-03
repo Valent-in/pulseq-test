@@ -39,17 +39,13 @@ function WamInit(songObj) {
 		if (!event.target.classList.contains("js-select-list-entry"))
 			return;
 
-		console.log(event.target.dataset.name);
-
+		// delegated to external object which handles audionode graph
 		songObj.unloadPlugin(selectedSlot);
-		pluginSelectors[selectedSlot].innerText = "+";
-		pluginSelectors[selectedSlot].classList.remove("button-select");
-		
 
 		if (event.target.dataset.name)
 			songObj.addPlugin(event.target.dataset.name, selectedSlot);
 		else
-			songObj.removePlugin(selectedSlot);
+			songObj.removePluginState(selectedSlot);
 
 		hideModal("plugin-select-modal-menu");
 	}
@@ -71,9 +67,12 @@ function WamInit(songObj) {
 		console.log(" ! Can not fetch plugin list ! ");
 	});
 
-	this.loadModule = async function (name, index = 0) {
+	this.loadModule = async function (name, index = 0, showNameOnError) {
 		let wamInstance;
 		let wamGui;
+		let mount = pluginMounts[index];
+		mount.textContent = "Loading...";
+		pluginSelectors[index].disabled = true;
 
 		const pathToWam = "../wam-plugins/" + name + "/index.js";
 		const audioContext = Tone.getContext().rawContext._nativeAudioContext;
@@ -92,6 +91,14 @@ function WamInit(songObj) {
 			const { default: WAM } = await import(pathToWam);
 			wamInstance = await WAM.createInstance(hostGroupId, audioContext);
 		} catch (error) {
+			if (showNameOnError) {
+				updatePluginSelector(index, name);
+				mount.textContent = "Error";
+			} else {
+				mount.innerHTML = "";
+			}
+
+			pluginSelectors[index].disabled = false;
 			showAlert("Can not load plugin " + name + "\n" + error.message);
 			console.error(error.message);
 			return;
@@ -99,22 +106,24 @@ function WamInit(songObj) {
 
 		wamGui = await wamInstance.createGui();
 
-		let mount = pluginMounts[index];
 		mount.innerHTML = "";
 		mount.appendChild(wamGui);
+		updatePluginSelector(index, name);
+		pluginSelectors[index].disabled = false;
 
 		instances[index] = { wamInstance: wamInstance, wamGui: wamGui };
 
 		instances[index].node = new BridgeNode(wamInstance.audioNode);
 
-		pluginSelectors[index].innerText = name;
-		pluginSelectors[index].classList.add("button-select");
 		console.log("WAM INIT COMPLETED", pathToWam);
 	}
 
 	this.destroyModule = function (index = 0) {
+		updatePluginSelector(selectedSlot);
+
 		if (!instances[index]) {
-			console.log("module index does not exist");
+			pluginMounts[index].innerHTML = ""; // remove "Error" message
+			console.log("module at index " + index + " does not exist");
 			return;
 		}
 
@@ -133,6 +142,16 @@ function WamInit(songObj) {
 		}
 
 		instances[index] = null;
+	}
+
+	function updatePluginSelector(index, name) {
+		if (name) {
+			pluginSelectors[index].textContent = name;
+			pluginSelectors[index].classList.add("button-select");
+		} else {
+			pluginSelectors[index].textContent = "+";
+			pluginSelectors[index].classList.remove("button-select");
+		}
 	}
 
 	function buildPluginList(list) {

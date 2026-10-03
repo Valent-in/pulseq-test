@@ -491,9 +491,9 @@ function SynthHelper(songObj, synthUi, rebuildPatternSynthListCallback) {
 
 		for (let i = 0; i < songObj.pluginStates.length; i++) {
 			let o = document.createElement("OPTION");
-			let pluginName = songObj.pluginStates[i] && songObj.pluginStates[i].name;
-			let text = "slot " + i + " (" + (pluginName || "---") + ")";
-			if (!songObj.pluginStates[i])
+			let pluginName = songObj.isPluginLoaded(i) && songObj.pluginStates[i].name;
+			let text = "slot " + (i + 1) + " (" + (pluginName || "---") + ")";
+			if (!songObj.isPluginLoaded(i))
 				o.disabled = true;
 			o.appendChild(document.createTextNode(text));
 			o.value = i;
